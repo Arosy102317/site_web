@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # Base de données PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: fofifa_db
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME:-fofifa_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-fofifa_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # Backend Django REST API
+  backend_django:
+    build:
+      context: ./backend_django
+      dockerfile: Dockerfile.django
+    container_name: fofifa_django
+    restart: always
+    command: gunicorn fofifa_backend.wsgi:application --bind 0.0.0.0:8000
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-production-secret-key-12345}
+      DEBUG: "False"
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${DB_NAME:-fofifa_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-fofifa_password}
+      DB_HOST: db
+      DB_PORT: "5432"
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+
+  # Backend PHP Service API
+  backend_php:
+    build:
+      context: ./backend_php
+      dockerfile: Dockerfile.php
+    container_name: fofifa_php
+    restart: always
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${DB_NAME:-fofifa_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-fofifa_password}
+    ports:
+      - "8080:80"
+
+  # Reverse Proxy Nginx & Frontend Static Serving
+  nginx:
+    image: nginx:alpine
+    container_name: fofifa_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./project/dist:/usr/share/nginx/html:ro
+    depends_on:
+      - backend_django
+      - backend_php
+
+volumes:
+  postgres_data:

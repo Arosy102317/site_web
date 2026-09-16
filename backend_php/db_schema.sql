@@ -1,0 +1,126 @@
+-- Schema MySQL / MariaDB pour FOFIFA (Déploiement PHP / cPanel / Shared Hosting)
+
+CREATE TABLE IF NOT EXISTS departements (
+  id VARCHAR(36) PRIMARY KEY,
+  nom VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) UNIQUE NOT NULL,
+  mission TEXT NOT NULL,
+  description TEXT,
+  responsable VARCHAR(255) DEFAULT '',
+  email VARCHAR(255) DEFAULT '',
+  telephone VARCHAR(50) DEFAULT '',
+  icon_name VARCHAR(50) DEFAULT 'Leaf',
+  ordre INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS chercheurs (
+  id VARCHAR(36) PRIMARY KEY,
+  nom VARCHAR(255) NOT NULL,
+  fonction VARCHAR(255) DEFAULT '',
+  departement_id VARCHAR(36),
+  specialite VARCHAR(255) DEFAULT '',
+  email VARCHAR(255) DEFAULT '',
+  photo_url TEXT,
+  linkedin_url TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (departement_id) REFERENCES departements(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS centres_regionaux (
+  id VARCHAR(36) PRIMARY KEY,
+  nom VARCHAR(255) NOT NULL,
+  region VARCHAR(255) DEFAULT '',
+  ville VARCHAR(255) DEFAULT '',
+  adresse TEXT,
+  telephone VARCHAR(50) DEFAULT '',
+  email VARCHAR(255) DEFAULT '',
+  responsable VARCHAR(255) DEFAULT '',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS projets (
+  id VARCHAR(36) PRIMARY KEY,
+  titre VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) UNIQUE NOT NULL,
+  domaine VARCHAR(100) DEFAULT 'Agronomie',
+  resume TEXT,
+  description TEXT,
+  statut VARCHAR(50) DEFAULT 'En cours',
+  date_debut DATE,
+  date_fin DATE,
+  budget VARCHAR(100),
+  bailleur VARCHAR(255),
+  responsable VARCHAR(255),
+  impact TEXT,
+  image_url TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS publications (
+  id VARCHAR(36) PRIMARY KEY,
+  titre VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) UNIQUE NOT NULL,
+  type VARCHAR(100) DEFAULT 'Rapport',
+  auteurs VARCHAR(255) DEFAULT '',
+  annee INT DEFAULT 2026,
+  resume TEXT,
+  fichier_url TEXT,
+  projet_id VARCHAR(36),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (projet_id) REFERENCES projets(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS categories (
+  id VARCHAR(36) PRIMARY KEY,
+  nom VARCHAR(100) NOT NULL,
+  slug VARCHAR(100) UNIQUE NOT NULL,
+  couleur VARCHAR(50) DEFAULT 'primary',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS actualites (
+  id VARCHAR(36) PRIMARY KEY,
+  titre VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) UNIQUE NOT NULL,
+  extrait TEXT,
+  contenu TEXT,
+  image_url TEXT,
+  categorie_id VARCHAR(36),
+  auteur VARCHAR(100) DEFAULT 'FOFIFA',
+  date_publication DATETIME DEFAULT CURRENT_TIMESTAMP,
+  tags JSON,
+  lu INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (categorie_id) REFERENCES categories(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS partenaires (
+  id VARCHAR(36) PRIMARY KEY,
+  nom VARCHAR(255) NOT NULL,
+  logo_url TEXT,
+  site_web TEXT,
+  type VARCHAR(100) DEFAULT 'Institutionnel',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS evenements (
+  id VARCHAR(36) PRIMARY KEY,
+  titre VARCHAR(255) NOT NULL,
+  description TEXT,
+  date_debut DATETIME DEFAULT CURRENT_TIMESTAMP,
+  date_fin DATETIME,
+  lieu VARCHAR(255) DEFAULT '',
+  image_url TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS messages_contact (
+  id VARCHAR(36) PRIMARY KEY,
+  nom VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  sujet VARCHAR(255) DEFAULT '',
+  message TEXT NOT NULL,
+  traite TINYINT(1) DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
